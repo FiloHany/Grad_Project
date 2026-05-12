@@ -88,8 +88,9 @@ class ResNet3D_EF(nn.Module):
         # ------------------------------
         # Backbone
         # ------------------------------
-        if pretrained and HAS_WEIGHTS_ENUM:
-            self.backbone = r3d_18(weights=R3D_18_Weights.DEFAULT)
+        if HAS_WEIGHTS_ENUM:
+            weights = R3D_18_Weights.DEFAULT if pretrained else None
+            self.backbone = r3d_18(weights=weights)
         else:
             self.backbone = r3d_18(pretrained=pretrained)
 

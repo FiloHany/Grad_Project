@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<!--
+  CardioVision — Demo UI
+  ======================
+  Purpose : Product flow demonstration. NOT the final clinical UI.
+  Audience : Fullstack team — shows upload → job → results contract.
+
+  What this demonstrates
+  ───────────────────────
+  1. Two-file upload (4CH + 2CH NIfTI)
+  2. Async job creation and polling (every 3 s)
+  3. Stage-by-stage progress (segmentation → measurement → CNN → visualization)
+  4. Clinical measurements display
+  5. ED / ES annotated frame viewer
+  6. Segmentation overlay GIF player
+  7. Raw JSON report for developer inspection
+
+  API used
+  ────────
+  POST /api/studies/upload
+  POST /api/studies/{studyId}/analyze
+  GET  /api/jobs/{jobId}
+  GET  /api/jobs/{jobId}/report
+  GET  /media/{jobId}/outputs/{filename}
+
+  See /docs for full Swagger documentation.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CardioVision — Cardiac Analysis</title>
+  <style>
+    /* ── Design tokens ─────────────────────────────────────── */
+    :root {
+      --bg:       #f0f4f8;
+      --card:     #ffffff;
+      --border:   #dde3ea;
+      --primary:  #1a6fa8;
+      --primary2: #e8f2fa;
+      --text:     #1a2635;
+      --muted:    #5a6a7a;
+      --success:  #1e9e5e;
+      --warning:  #c08a00;
+      --orange:   #c96b00;
+      --danger:   #c0392b;
+      --radius:   10px;
+      --shadow:   0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ────────────────────────────────────────────── */
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    header .logo { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+    header .subtitle { font-size: 0.85rem; opacity: 0.8; }
+    header .badge {
+      margin-left: auto;
+      font-size: 0.7rem;
+      background: rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    /* ── Layout ────────────────────────────────────────────── */
+    main {
+      max-width: 880px;
+      margin: 2rem auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    /* ── Card ──────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.75rem 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Sections (shown/hidden by JS) ─────────────────────── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Upload form ───────────────────────────────────────── */
+    .upload-intro {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .file-row { margin-bottom: 1.25rem; }
+    .file-row label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .file-row .hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      background: #f8fafc;
+      cursor: pointer;
+    }
+    input[type="file"]:focus { outline: 2px solid var(--primary); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.6rem 1.4rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--bg); }
+    .error-msg {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      color: var(--danger);
+      font-size: 0.88rem;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── Progress ──────────────────────────────────────────── */
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.88rem;
+    }
+    .progress-bar-wrap {
+      background: #e5eaf0;
+      border-radius: 20px;
+      height: 10px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 20px;
+      transition: width 0.5s ease;
+    }
+    .stage-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .job-meta {
+      font-size: 0.78rem;
+      color: #9aa8b8;
+      font-family: monospace;
+    }
+
+    /* ── Diagnosis banner ──────────────────────────────────── */
+    .diagnosis-banner {
+      padding: 1.25rem 1.75rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .diagnosis-banner.normal   { background: #ecfdf5; border: 1px solid #6ee7b7; }
+    .diagnosis-banner.mild     { background: #fefce8; border: 1px solid #fde047; }
+    .diagnosis-banner.moderate { background: #fff7ed; border: 1px solid #fdba74; }
+    .diagnosis-banner.severe   { background: #fef2f2; border: 1px solid #fca5a5; }
+    .diag-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.7; }
+    .diag-value { font-size: 1.2rem; font-weight: 700; }
+    .diag-ef    { font-size: 2rem; font-weight: 800; }
+    .diag-ef-label { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── Stat cards ────────────────────────────────────────── */
+    .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+    .stat-card .val { font-size: 1.6rem; font-weight: 700; color: var(--primary); }
+    .stat-card .unit { font-size: 0.78rem; color: var(--muted); }
+    .stat-card .lbl { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* ── Measurements table ────────────────────────────────── */
+    .meas-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .meas-table th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      background: #f4f7fb;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    .meas-table td {
+      padding: 0.55rem 0.75rem;
+      border-bottom: 1px solid #f0f3f7;
+    }
+    .meas-table tr:last-child td { border-bottom: none; }
+    .meas-table td:last-child { font-weight: 600; text-align: right; }
+    .ensemble-tag {
+      font-size: 0.7rem;
+      background: var(--primary2);
+      color: var(--primary);
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    /* ── Image grid ────────────────────────────────────────── */
+    .frame-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .frame-panel { text-align: center; }
+    .frame-panel .frame-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+    .frame-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .frame-pair img {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .frame-pair .img-label { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 0.2rem; }
+    .frame-index { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem; }
+
+    /* ── GIF row ───────────────────────────────────────────── */
+    .gif-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .gif-panel { text-align: center; }
+    .gif-panel img {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .gif-panel .gif-label { font-size: 0.82rem; color: var(--muted); margin-top: 0.5rem; }
+
+    /* ── JSON collapsible ──────────────────────────────────── */
+    details { margin-top: 1rem; }
+    summary {
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--primary);
+      user-select: none;
+      padding: 0.4rem 0;
+    }
+    pre.json-block {
+      background: #f4f7fb;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.78rem;
+      overflow: auto;
+      max-height: 360px;
+      margin-top: 0.5rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* ── Responsive ────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .frame-grid, .gif-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ═══════════════════════════════════ HEADER ═══ -->
+<header>
+  <span class="logo">CardioVision</span>
+  <span class="subtitle">AI Cardiac Function Analysis</span>
+  <span class="badge">Demo UI</span>
+</header>
+
+<main>
+
+  <!-- ════════════════════════ SECTION: UPLOAD ═══ -->
+  <div id="sec-upload" class="section active">
+    <div class="card">
+      <div class="card-title">Upload Echocardiography Study</div>
+      <p class="upload-intro">
+        Upload both cardiac views in NIfTI format (.nii or .nii.gz).
+        The system will automatically segment cardiac structures, detect ED/ES frames,
+        compute clinical measurements, and generate an annotated report.
+      </p>
+
+      <form id="upload-form">
+        <div class="file-row">
+          <label>4-Chamber View (4CH)</label>
+          <input type="file" id="file-4ch" accept=".nii,.gz" required />
+          <p class="hint">Example: patient0233_4CH_half_sequence.nii.gz</p>
+        </div>
+
+        <div class="file-row">
+          <label>2-Chamber View (2CH)</label>
+          <input type="file" id="file-2ch" accept=".nii,.gz" required />
+          <p class="hint">Example: patient0233_2CH_half_sequence.nii.gz</p>
+        </div>
+
+        <button class="btn btn-primary" type="submit" id="btn-upload">
+          Run Analysis
+        </button>
+      </form>
+
+      <div class="error-msg" id="upload-error"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SECTION: ANALYZING ═══ -->
+  <div id="sec-analyzing" class="section">
+    <div class="card">
+      <div class="card-title">Analyzing Study</div>
+
+      <div class="progress-label">
+        <span id="prog-stage">Starting…</span>
+        <span id="prog-pct">0%</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="prog-bar" style="width:0%"></div>
+      </div>
+
+      <div class="stage-desc" id="stage-desc">Preparing pipeline…</div>
+      <div class="job-meta" id="job-meta"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ SECTION: RESULTS ═══ -->
+  <div id="sec-results" class="section">
+
+    <!-- Diagnosis banner -->
+    <div class="diagnosis-banner" id="diag-banner">
+      <div>
+        <div class="diag-label">Diagnosis</div>
+        <div class="diag-value" id="diag-value">—</div>
+      </div>
+      <div style="text-align:right">
+        <div class="diag-ef" id="diag-ef">—</div>
+        <div class="diag-ef-label">Final Ejection Fraction</div>
+      </div>
+    </div>
+
+    <!-- Key stats -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="val" id="stat-ef">—</div>
+        <div class="unit">%</div>
+        <div class="lbl">Ejection Fraction</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-edv">—</div>
+        <div class="unit">mL</div>
+        <div class="lbl">EDV (End-Diastolic)</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="stat-esv">—</div>
+        <div class="unit">mL</div>
+        <div class="lbl">ESV (End-Systolic)</div>
+      </div>
+    </div>
+
+    <!-- Measurements table -->
+    <div class="card">
+      <div class="card-title">Clinical Measurements</div>
+      <table class="meas-table">
+        <thead>
+          <tr><th>Measurement</th><th>Method</th><th>Value</th></tr>
+        </thead>
+        <tbody id="meas-tbody">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ED / ES frames -->
+    <div class="card">
+      <div class="card-title">Key Cardiac Frames</div>
+      <div class="frame-grid">
+        <div class="frame-panel">
+          <div class="frame-title">End-Diastolic (ED) — maximum volume</div>
+          <div class="frame-index" id="ed-frame-idx"></div>
+          <div class="frame-pair">
+            <div>
+              <img id="ed-orig" src="" alt="ED original" />
+              <div class="img-label">Original</div>
+            </div>
+            <div>
+              <img id="ed-overlay" src="" alt="ED segmentation" />
+              <div class="img-label">Segmentation</div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-panel">
+          <div class="frame-title">End-Systolic (ES) — minimum volume</div>
+          <div class="frame-index" id="es-frame-idx"></div>
+          <div class="frame-pair">
+            <div>
+              <img id="es-orig" src="" alt="ES original" />
+              <div class="img-label">Original</div>
+            </div>
+            <div>
+              <img id="es-overlay" src="" alt="ES segmentation" />
+              <div class="img-label">Segmentation</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GIFs -->
+    <div class="card">
+      <div class="card-title">Full Cardiac Cycle Animation</div>
+      <div class="gif-row">
+        <div class="gif-panel">
+          <img id="gif-orig" src="" alt="Original sequence" />
+          <div class="gif-label">Raw Ultrasound Sequence</div>
+        </div>
+        <div class="gif-panel">
+          <img id="gif-overlay" src="" alt="Overlay sequence" />
+          <div class="gif-label">Segmentation Overlay
+            <span style="font-size:0.7rem;color:#888"> — Blue: LV &nbsp; Green: Myocardium &nbsp; Red: LA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw JSON report -->
+    <div class="card">
+      <div class="card-title">Developer: Raw JSON Report</div>
+      <details>
+        <summary>Show full API response (GET /api/jobs/{job_id}/report)</summary>
+        <pre class="json-block" id="raw-json">—</pre>
+      </details>
+    </div>
+
+    <!-- Actions -->
+    <div style="text-align:center; margin-top: 1rem;">
+      <button class="btn btn-outline" onclick="resetToUpload()">
+        ← Analyze Another Study
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════ SECTION: ERROR ═══ -->
+  <div id="sec-error" class="section">
+    <div class="card">
+      <div class="card-title">Analysis Failed</div>
+      <p style="color:var(--danger); margin-bottom:1rem;" id="err-detail">An error occurred.</p>
+      <button class="btn btn-outline" onclick="resetToUpload()">← Try Again</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CardioVision — Demo UI Script
+//
+//  State machine:  upload → analyzing → results | error
+//  The fullstack team can use this as a reference implementation
+//  showing how to call the CardioVision API.
+// ═══════════════════════════════════════════════════════════════
+
+let studyId   = null;
+let jobId     = null;
+let pollTimer = null;
+
+const POLL_INTERVAL_MS = 3000;
+
+const STAGE_LABELS = {
+  segmentation:  'Segmenting cardiac structures (LV, myocardium, LA)…',
+  measurement:   'Computing clinical measurements (EDV, ESV, EF, FAC…)…',
+  cnn_inference: 'Running video-based EF prediction (3D CNN)…',
+  visualization: 'Generating annotated frames and GIFs…',
+  done:          'Pipeline complete.',
+};
+
+// ── Section management ──────────────────────────────────────────
+function showSection(name) {
+  ['upload', 'analyzing', 'results', 'error'].forEach(s => {
+    document.getElementById('sec-' + s).classList.remove('active');
+  });
+  document.getElementById('sec-' + name).classList.add('active');
+}
+
+// ── Upload flow ─────────────────────────────────────────────────
+document.getElementById('upload-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearUploadError();
+
+  const file4ch = document.getElementById('file-4ch').files[0];
+  const file2ch = document.getElementById('file-2ch').files[0];
+
+  if (!file4ch || !file2ch) {
+    showUploadError('Both files are required.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-upload');
+  btn.disabled = true;
+  btn.textContent = 'Uploading…';
+
+  try {
+    // Step 1 — upload files
+    const uploadResp = await uploadStudy(file4ch, file2ch);
+    studyId = uploadResp.study_id;
+
+    // Step 2 — trigger analysis
+    const jobResp = await triggerAnalysis(studyId);
+    jobId = jobResp.job_id;
+
+    // Step 3 — show progress screen and start polling
+    showSection('analyzing');
+    updateProgress({ status: 'queued', progress_pct: 0, stage: null });
+    document.getElementById('job-meta').textContent = 'Job ID: ' + jobId;
+    startPolling(jobId);
+
+  } catch (err) {
+    showUploadError(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Analysis';
+  }
+});
+
+async function uploadStudy(file4ch, file2ch) {
+  const form = new FormData();
+  form.append('file_4ch', file4ch);
+  form.append('file_2ch', file2ch);
+
+  const res = await fetch('/api/studies/upload', { method: 'POST', body: form });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(detail.detail || 'Upload failed.');
+  }
+  return res.json();
+}
+
+async function triggerAnalysis(sid) {
+  const res = await fetch(`/api/studies/${sid}/analyze`, { method: 'POST' });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(detail.detail || 'Could not start analysis.');
+  }
+  return res.json();
+}
+
+// ── Polling ─────────────────────────────────────────────────────
+function startPolling(jid) {
+  pollTimer = setInterval(() => checkJob(jid), POLL_INTERVAL_MS);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+async function checkJob(jid) {
+  try {
+    const res = await fetch(`/api/jobs/${jid}`);
+    if (!res.ok) return; // transient network error — keep polling
+    const job = await res.json();
+
+    updateProgress(job);
+
+    if (job.status === 'completed') {
+      stopPolling();
+      await loadAndRenderReport(jid);
+    } else if (job.status === 'failed') {
+      stopPolling();
+      showSection('error');
+      document.getElementById('err-detail').textContent =
+        job.error_message || 'Unknown error during analysis.';
+    }
+  } catch (_) {
+    // network glitch — keep polling silently
+  }
+}
+
+function updateProgress(job) {
+  const pct   = job.progress_pct ?? 0;
+  const stage = job.stage || null;
+
+  document.getElementById('prog-pct').textContent  = pct + '%';
+  document.getElementById('prog-bar').style.width  = pct + '%';
+  document.getElementById('prog-stage').textContent =
+    stage ? stage.replace('_', ' ').toUpperCase() : job.status.toUpperCase();
+  document.getElementById('stage-desc').textContent =
+    stage ? (STAGE_LABELS[stage] || stage) : 'Waiting in queue…';
+}
+
+// ── Render results ───────────────────────────────────────────────
+async function loadAndRenderReport(jid) {
+  const res = await fetch(`/api/jobs/${jid}/report`);
+  const report = await res.json();
+  renderReport(report);
+  showSection('results');
+}
+
+function renderReport(report) {
+  const m   = report.measurements;
+  const viz = report.visualizations;
+  const diag = report.diagnosis;
+
+  // Diagnosis banner
+  const bannerEl = document.getElementById('diag-banner');
+  bannerEl.className = 'diagnosis-banner ' + diagClass(diag);
+  document.getElementById('diag-value').textContent = diag;
+  document.getElementById('diag-ef').textContent    = report.ef_final.toFixed(1) + '%';
+
+  // Stat cards
+  document.getElementById('stat-ef').textContent  = report.ef_final.toFixed(1);
+  document.getElementById('stat-edv').textContent = m.edv_ml.toFixed(1);
+  document.getElementById('stat-esv').textContent = m.esv_ml.toFixed(1);
+
+  // Measurements table
+  const rows = [
+    ['Ejection Fraction (EF)',     'Biplane Simpson',    m.ef_biplane + ' %'],
+    ['EF — CNN Video Model',       '3D ResNet + Attn',   m.ef_cnn != null ? m.ef_cnn + ' %' : 'N/A (short clip)'],
+    ['EF — Final',                 'Ensemble avg',       m.ef_final + ' % <span class="ensemble-tag">ENSEMBLE</span>'],
+    ['End-Diastolic Volume (EDV)', 'Biplane Simpson',    m.edv_ml + ' mL'],
+    ['End-Systolic Volume (ESV)',  'Biplane Simpson',    m.esv_ml + ' mL'],
+    ['Stroke Volume (SV)',         'EDV − ESV',          m.sv_ml + ' mL'],
+    ['LV Max Area',                '4CH, pixel sum × spacing', m.lv_area_max_cm2 + ' cm²'],
+    ['Fractional Area Change',     'FAC formula',        m.fac_pct + ' %'],
+    ['LA Max Area',                '4CH, pixel sum × spacing', m.la_area_max_cm2 + ' cm²'],
+    ['LA Ejection Fraction',       'Area-based',         m.la_ef_pct + ' %'],
+  ];
+  const tbody = document.getElementById('meas-tbody');
+  tbody.innerHTML = rows.map(([name, method, val]) =>
+    `<tr><td>${name}</td><td style="color:var(--muted);font-size:0.82rem">${method}</td><td>${val}</td></tr>`
+  ).join('');
+
+  // Frame info
+  document.getElementById('ed-frame-idx').textContent = 'Frame index: ' + m.ed_frame_index;
+  document.getElementById('es-frame-idx').textContent = 'Frame index: ' + m.es_frame_index;
+
+  // Frame images
+  setImg('ed-orig',    viz.ed_original);
+  setImg('ed-overlay', viz.ed_overlay);
+  setImg('es-orig',    viz.es_original);
+  setImg('es-overlay', viz.es_overlay);
+
+  // GIFs
+  setImg('gif-orig',    viz.original_gif);
+  setImg('gif-overlay', viz.overlay_gif);
+
+  // Raw JSON
+  document.getElementById('raw-json').textContent = JSON.stringify(report, null, 2);
+}
+
+function setImg(id, url) {
+  const el = document.getElementById(id);
+  el.src = url;
+  el.onerror = () => { el.style.opacity = '0.3'; el.alt = 'Image not available'; };
+}
+
+function diagClass(diagnosis) {
+  if (diagnosis === 'Normal')              return 'normal';
+  if (diagnosis === 'Mild Dysfunction')    return 'mild';
+  if (diagnosis === 'Moderate Dysfunction') return 'moderate';
+  return 'severe';
+}
+
+// ── Reset ────────────────────────────────────────────────────────
+function resetToUpload() {
+  stopPolling();
+  studyId = null;
+  jobId   = null;
+  document.getElementById('upload-form').reset();
+  clearUploadError();
+  showSection('upload');
+}
+
+function showUploadError(msg) {
+  const el = document.getElementById('upload-error');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function clearUploadError() {
+  const el = document.getElementById('upload-error');
+  el.textContent = '';
+  el.classList.remove('visible');
+}
+</script>
+
+</body>
+</html>

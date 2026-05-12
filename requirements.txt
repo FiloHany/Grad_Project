@@ -1,5 +1,10 @@
 nibabel
 opencv-python
 imageio
-torch
-torchvision
+# torch
+# torchvision
+
+# Product / API layer
+fastapi
+uvicorn[standard]
+python-multipart

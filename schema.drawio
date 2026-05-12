@@ -1,0 +1,394 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ═══════════════════════════ TITLE ═══════════════════════════ -->
+    <mxCell id="10" value="CardioVision — System Architecture &amp; API Contract"
+      style="text;html=1;strokeColor=none;fillColor=#1a2635;fontColor=#ffffff;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=15;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="40" y="15" width="1089" height="38" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════ CLIENT ══════════════════════════ -->
+    <mxCell id="20" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1d4ed8;strokeWidth=2;"
+      vertex="1" parent="1">
+      <mxGeometry x="40" y="68" width="1089" height="68" as="geometry" />
+    </mxCell>
+    <mxCell id="20L" value="Client Layer"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=9;fontStyle=1;fontColor=#1d4ed8;align=left;verticalAlign=middle;"
+      vertex="1" parent="1">
+      <mxGeometry x="52" y="68" width="80" height="18" as="geometry" />
+    </mxCell>
+    <mxCell id="21" value="Demo UI&#xa;app/static/index.html"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bfdbfe;strokeColor=#1d4ed8;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="52" y="85" width="185" height="42" as="geometry" />
+    </mxCell>
+    <mxCell id="22" value="Frontend App&#xa;(React / Vue / Angular)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bfdbfe;strokeColor=#1d4ed8;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="252" y="85" width="185" height="42" as="geometry" />
+    </mxCell>
+    <mxCell id="23" value="API Client&#xa;(Postman / curl)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bfdbfe;strokeColor=#1d4ed8;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="452" y="85" width="185" height="42" as="geometry" />
+    </mxCell>
+    <mxCell id="24" value="Swagger Docs&#xa;http://localhost:8000/docs"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bfdbfe;strokeColor=#1d4ed8;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="652" y="85" width="185" height="42" as="geometry" />
+    </mxCell>
+    <mxCell id="25" value="Health Check&#xa;GET /health"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bfdbfe;strokeColor=#1d4ed8;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="852" y="85" width="262" height="42" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════ run.py ══════════════════════════ -->
+    <mxCell id="30" value="run.py  —  Server Entry Point&#xa;Checks port availability (socket test) → uvicorn.run(&quot;app.main:app&quot;, port=8000)  |  python run.py --port 8080"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;strokeWidth=2;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="250" y="162" width="669" height="42" as="geometry" />
+    </mxCell>
+
+    <!-- Arrow: Client → run.py -->
+    <mxCell id="ar1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1d4ed8;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="20" target="30" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════ main.py ═════════════════════════ -->
+    <mxCell id="40" value="app/main.py  —  FastAPI Application&#xa;CORS Middleware (allow_origins=[*])  |  Mount /static → app/static/  |  Mount /media → jobs/  |  Register routers: studies.router → /api/studies  |  jobs.router → /api/jobs  |  Serve index.html at /"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#475569;strokeWidth=2;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="100" y="232" width="969" height="46" as="geometry" />
+    </mxCell>
+
+    <!-- Arrow: run.py → main.py -->
+    <mxCell id="ar2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#475569;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="30" target="40" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════ ROUTES ROW ══════════════════════════ -->
+
+    <!-- Studies routes box -->
+    <mxCell id="50B" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1a6fa8;strokeWidth=2;"
+      vertex="1" parent="1">
+      <mxGeometry x="40" y="306" width="520" height="155" as="geometry" />
+    </mxCell>
+    <mxCell id="50H" value="app/api/routes/studies.py"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a6fa8;strokeColor=#1a6fa8;fontColor=#ffffff;fontSize=10;fontStyle=1;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="40" y="306" width="520" height="26" as="geometry" />
+    </mxCell>
+    <mxCell id="51" value="POST  /api/studies/upload&#xa;Accepts file_4ch + file_2ch via multipart/form-data  |  Validates .nii / .nii.gz  |  Saves to uploads/{study_id}/  |  Returns 201: { study_id, status, created_at, message }"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1a6fa8;fontSize=9;align=left;spacingLeft=6;"
+      vertex="1" parent="1">
+      <mxGeometry x="50" y="340" width="500" height="52" as="geometry" />
+    </mxCell>
+    <mxCell id="52" value="POST  /api/studies/{study_id}/analyze&#xa;Checks files exist  |  Generates job_id  |  Creates job record (status: queued)  |  Launches background thread  |  Returns 202: { job_id, status: queued }"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1a6fa8;fontSize=9;align=left;spacingLeft=6;"
+      vertex="1" parent="1">
+      <mxGeometry x="50" y="398" width="500" height="52" as="geometry" />
+    </mxCell>
+
+    <!-- Jobs routes box -->
+    <mxCell id="60B" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eff6ff;strokeColor=#1a6fa8;strokeWidth=2;"
+      vertex="1" parent="1">
+      <mxGeometry x="589" y="306" width="540" height="155" as="geometry" />
+    </mxCell>
+    <mxCell id="60H" value="app/api/routes/jobs.py"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a6fa8;strokeColor=#1a6fa8;fontColor=#ffffff;fontSize=10;fontStyle=1;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="589" y="306" width="540" height="26" as="geometry" />
+    </mxCell>
+    <mxCell id="61" value="GET  /api/jobs/{id}  →  Poll every 3s  |  Returns: status (queued|running|completed|failed), stage, progress_pct, error_message"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1a6fa8;fontSize=9;align=left;spacingLeft=6;"
+      vertex="1" parent="1">
+      <mxGeometry x="599" y="340" width="520" height="28" as="geometry" />
+    </mxCell>
+    <mxCell id="62" value="GET  /api/jobs/{id}/measurements  →  ef_biplane, ef_cnn, ef_final, edv_ml, esv_ml, sv_ml, lv_area_max_cm2, fac_pct, la_area_max_cm2, la_ef_pct, ed_frame_index, es_frame_index, diagnosis"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1a6fa8;fontSize=9;align=left;spacingLeft=6;"
+      vertex="1" parent="1">
+      <mxGeometry x="599" y="374" width="520" height="28" as="geometry" />
+    </mxCell>
+    <mxCell id="63" value="GET  /api/jobs/{id}/visualizations  →  original_gif, overlay_gif, ed_original, ed_overlay, es_original, es_overlay  (as /media/... URL paths)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1a6fa8;fontSize=9;align=left;spacingLeft=6;"
+      vertex="1" parent="1">
+      <mxGeometry x="599" y="408" width="520" height="24" as="geometry" />
+    </mxCell>
+    <mxCell id="64" value="GET  /api/jobs/{id}/report  →  Full report: diagnosis + ef_final + all measurements + all visualization URLs (single call)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1a6fa8;fontSize=9;align=left;spacingLeft=6;"
+      vertex="1" parent="1">
+      <mxGeometry x="599" y="437" width="520" height="24" as="geometry" />
+    </mxCell>
+
+    <!-- Arrows: main.py → routes -->
+    <mxCell id="ar3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1a6fa8;strokeWidth=2;exitX=0.35;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="40" target="50B" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ar4" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#1a6fa8;strokeWidth=2;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="40" target="60B" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════ SUPPORT LAYER ═══════════════════════ -->
+
+    <!-- Schemas group -->
+    <mxCell id="70B" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f3ff;strokeColor=#7c3aed;strokeWidth=2;"
+      vertex="1" parent="1">
+      <mxGeometry x="40" y="490" width="370" height="115" as="geometry" />
+    </mxCell>
+    <mxCell id="70H" value="app/schemas/"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7c3aed;strokeColor=#7c3aed;fontColor=#ffffff;fontSize=10;fontStyle=1;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="40" y="490" width="370" height="24" as="geometry" />
+    </mxCell>
+    <mxCell id="71" value="study.py&#xa;StudyUploadResponse"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="50" y="522" width="108" height="72" as="geometry" />
+    </mxCell>
+    <mxCell id="72" value="job.py&#xa;JobStatus&#xa;JobStage&#xa;JobStatusResponse"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="168" y="522" width="112" height="72" as="geometry" />
+    </mxCell>
+    <mxCell id="73" value="results.py&#xa;MeasurementsResult&#xa;VisualizationAssets&#xa;FullReport"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontSize=9;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="290" y="522" width="110" height="72" as="geometry" />
+    </mxCell>
+
+    <!-- job_store -->
+    <mxCell id="80" value="app/storage/job_store.py&#xa;In-Memory Dict + JSON per job&#xa;Loads all jobs on startup (restart-safe)&#xa;Thread-safe via threading.Lock()&#xa;create_job | get_job | update_job | list_jobs"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7ed;strokeColor=#c96b00;strokeWidth=2;fontSize=9;align=center;verticalAlign=middle;"
+      vertex="1" parent="1">
+      <mxGeometry x="430" y="490" width="270" height="115" as="geometry" />
+    </mxCell>
+
+    <!-- job_service -->
+    <mxCell id="90" value="app/services/job_service.py&#xa;Background Thread Manager&#xa;launch_job(job_id) → daemon thread&#xa;_run(): queued → running → completed | failed&#xa;on_stage_update callback → updates progress_pct&#xa;_build_url_map(): filenames → /media/ URLs"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#16a34a;strokeWidth=2;fontSize=9;align=center;verticalAlign=middle;"
+      vertex="1" parent="1">
+      <mxGeometry x="720" y="490" width="409" height="115" as="geometry" />
+    </mxCell>
+
+    <!-- Arrows: routes → support layer -->
+    <mxCell id="ar5" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c96b00;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.3;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="50B" target="80" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ar6" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#16a34a;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.2;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="52" target="90" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ar7" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c96b00;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.7;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="60B" target="80" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ar8" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#c96b00;strokeWidth=1.5;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;"
+      edge="1" source="90" target="80" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ar8L" value="updates state"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=8;fontColor=#c96b00;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="575" y="540" width="80" height="18" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════ ML ADAPTER ══════════════════════════ -->
+    <mxCell id="100" value="app/ml_adapter/pipeline_wrapper.py  —  ML Boundary&#xa;SOLE FILE THAT IMPORTS FROM src/  |  Adds src/ to sys.path at startup  |  Loads nnU-Net segmentation model + ResNet3D EF model once into RAM&#xa;run_full_pipeline(path_4ch, path_2ch, output_dir, on_stage_update)  →  { measurements: {...}, visualizations: {filenames} }&#xa;Copies outputs/ → jobs/{job_id}/outputs/ after each run  |  Calls on_stage_update(stage, pct) at each pipeline stage"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;strokeWidth=2;fontSize=9;align=center;verticalAlign=middle;"
+      vertex="1" parent="1">
+      <mxGeometry x="100" y="638" width="969" height="58" as="geometry" />
+    </mxCell>
+
+    <!-- Arrow: job_service → ML Adapter -->
+    <mxCell id="ar9" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#d97706;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="90" target="100" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════ ML PIPELINE ═════════════════════════ -->
+    <mxCell id="110B" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#059669;strokeWidth=2;"
+      vertex="1" parent="1">
+      <mxGeometry x="75" y="726" width="1019" height="160" as="geometry" />
+    </mxCell>
+    <mxCell id="110H" value="src/  —  ML Pipeline  (READ ONLY — zero modifications)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#059669;strokeColor=#059669;fontColor=#ffffff;fontSize=10;fontStyle=1;align=center;"
+      vertex="1" parent="1">
+      <mxGeometry x="75" y="726" width="1019" height="26" as="geometry" />
+    </mxCell>
+    <mxCell id="111" value="predictors/&#xa;load_segmentation_model()&#xa;predict_masks()&#xa;  → nnU-Net + Deep Supervision&#xa;  → 4 classes: BG / LV / Myocardium / LA&#xa;  → frame-wise, resized to 384×384&#xa;predict_ef_video_model()&#xa;  → R(2+1)D-18 + Spatial+Temporal Attn&#xa;  → 48-frame clip centered on ES&#xa;  → outputs EF% directly"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;fontSize=9;align=left;spacingLeft=6;verticalAlign=top;spacingTop=4;"
+      vertex="1" parent="1">
+      <mxGeometry x="90" y="760" width="300" height="115" as="geometry" />
+    </mxCell>
+    <mxCell id="112" value="postprocessing/&#xa;run_pipeline()&#xa;  → Biplane Simpson per frame&#xa;  → Volume curve over all frames&#xa;  → ED = argmax(volumes)&#xa;  → ES = argmin(volumes)&#xa;  → EDV, ESV, EF, SV, FAC&#xa;  → LV area, LA area, LA EF&#xa;get_ef_class()&#xa;  → Normal/Mild/Moderate/Severe"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;fontSize=9;align=left;spacingLeft=6;verticalAlign=top;spacingTop=4;"
+      vertex="1" parent="1">
+      <mxGeometry x="405" y="760" width="300" height="115" as="geometry" />
+    </mxCell>
+    <mxCell id="113" value="visualization/&#xa;create_gifs()&#xa;  → original.gif (raw sequence)&#xa;  → overlay.gif (segmentation contours)&#xa;  → LV=Blue, Myocardium=Green, LA=Red&#xa;visualize_ed_es()&#xa;  → ED_original.png + ED_overlay.png&#xa;  → ES_original.png + ES_overlay.png&#xa;Writes all files to:  outputs/ (repo root)"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;fontSize=9;align=left;spacingLeft=6;verticalAlign=top;spacingTop=4;"
+      vertex="1" parent="1">
+      <mxGeometry x="720" y="760" width="360" height="115" as="geometry" />
+    </mxCell>
+
+    <!-- Arrow: ML Adapter → ML Pipeline -->
+    <mxCell id="ar10" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#059669;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="100" target="110B" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════ FILE SYSTEM ═════════════════════════ -->
+    <mxCell id="120" value="uploads/&#xa;{study_id}/&#xa;   4ch.nii.gz   ← 4-Chamber view&#xa;   2ch.nii.gz   ← 2-Chamber view&#xa;&#xa;Written by:  POST /upload&#xa;Read by:  pipeline_wrapper"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=2;fontSize=9;align=left;spacingLeft=8;verticalAlign=middle;"
+      vertex="1" parent="1">
+      <mxGeometry x="75" y="912" width="350" height="110" as="geometry" />
+    </mxCell>
+    <mxCell id="130" value="jobs/&#xa;{job_id}/&#xa;   state.json  ← status + measurements + viz URLs&#xa;   outputs/&#xa;      original.gif    overlay.gif&#xa;      ED_original.png  ED_overlay.png&#xa;      ES_original.png  ES_overlay.png&#xa;&#xa;Served at:  /media/{job_id}/outputs/{filename}"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=2;fontSize=9;align=left;spacingLeft=8;verticalAlign=middle;"
+      vertex="1" parent="1">
+      <mxGeometry x="455" y="912" width="639" height="110" as="geometry" />
+    </mxCell>
+
+    <!-- Arrows: Pipeline → File System (dashed = file I/O) -->
+    <mxCell id="ar11" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#64748b;strokeWidth=1.5;dashed=1;exitX=0.15;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="110B" target="120" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ar12" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#64748b;strokeWidth=1.5;dashed=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="110B" target="130" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ar13" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#64748b;strokeWidth=1.5;dashed=1;exitX=0.15;exitY=1;exitDx=0;exitDy=0;entryX=0.15;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="51" target="120" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="ar14" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#64748b;strokeWidth=1.5;dashed=1;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.2;entryY=0;entryDx=0;entryDy=0;"
+      edge="1" source="80" target="130" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════ JOB STATUS FLOW BOX ═══════════════════ -->
+    <mxCell id="sfB" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#94a3b8;strokeWidth=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="75" y="1042" width="640" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="sfT" value="Job Status Lifecycle"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=9;fontStyle=1;fontColor=#475569;"
+      vertex="1" parent="1">
+      <mxGeometry x="85" y="1045" width="140" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="sf1" value="queued"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#64748b;fontSize=10;align=center;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="95" y="1065" width="85" height="32" as="geometry" />
+    </mxCell>
+    <mxCell id="sf2" value="running"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontSize=10;align=center;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="240" y="1065" width="85" height="32" as="geometry" />
+    </mxCell>
+    <mxCell id="sf3" value="completed"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1fae5;strokeColor=#059669;fontSize=10;align=center;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="400" y="1048" width="95" height="32" as="geometry" />
+    </mxCell>
+    <mxCell id="sf4" value="failed"
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#dc2626;fontSize=10;align=center;fontStyle=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="400" y="1084" width="95" height="32" as="geometry" />
+    </mxCell>
+    <mxCell id="sfa1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#64748b;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.5;"
+      edge="1" source="sf1" target="sf2" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="sfa2" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#059669;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.5;"
+      edge="1" source="sf2" target="sf3" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="sfa3" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#dc2626;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.5;"
+      edge="1" source="sf2" target="sf4" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="sfStages" value="stages:  segmentation (5→60%)  →  measurement (65%)  →  cnn_inference (70%)  →  visualization (80%)  →  done (100%)"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=8;fontColor=#64748b;align=left;"
+      vertex="1" parent="1">
+      <mxGeometry x="510" y="1073" width="195" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════ LEGEND ═══════════════════════════ -->
+    <mxCell id="legB" value=""
+      style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#94a3b8;strokeWidth=1;"
+      vertex="1" parent="1">
+      <mxGeometry x="735" y="1042" width="379" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="legT" value="Legend"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=9;fontStyle=1;fontColor=#475569;"
+      vertex="1" parent="1">
+      <mxGeometry x="745" y="1045" width="60" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="leg1a" style="strokeColor=#1d4ed8;strokeWidth=2;"
+      edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="748" y="1072" as="sourcePoint" />
+        <mxPoint x="790" y="1072" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="leg1b" value="HTTP request"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=8;fontColor=#1d4ed8;"
+      vertex="1" parent="1">
+      <mxGeometry x="796" y="1064" width="90" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="leg2a" style="strokeColor=#475569;strokeWidth=2;"
+      edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="748" y="1088" as="sourcePoint" />
+        <mxPoint x="790" y="1088" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="leg2b" value="internal call"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=8;fontColor=#475569;"
+      vertex="1" parent="1">
+      <mxGeometry x="796" y="1080" width="90" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="leg3a" style="strokeColor=#64748b;strokeWidth=1.5;dashed=1;"
+      edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="748" y="1104" as="sourcePoint" />
+        <mxPoint x="790" y="1104" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="leg3b" value="file I/O (read/write)"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=8;fontColor=#64748b;"
+      vertex="1" parent="1">
+      <mxGeometry x="796" y="1096" width="110" height="16" as="geometry" />
+    </mxCell>
+    <mxCell id="leg4a" style="strokeColor=#d97706;strokeWidth=1.5;dashed=1;"
+      edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="910" y="1072" as="sourcePoint" />
+        <mxPoint x="952" y="1072" as="targetPoint" />
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="leg4b" value="state update"
+      style="text;html=1;strokeColor=none;fillColor=none;fontSize=8;fontColor=#c96b00;"
+      vertex="1" parent="1">
+      <mxGeometry x="958" y="1064" width="80" height="16" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

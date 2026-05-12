@@ -29,9 +29,9 @@ def load_nii(path):
 # ---------------------------
 if __name__ == "__main__":
 
-    path_4ch = r"D:\Projects\Echo_Analysis\test_cases\patient0233\patient0233_4CH_half_sequence.nii.gz"
+    path_4ch = r"F:/Cardiac_Ultrasound_Analysis/test_cases/patient0233/patient0233_4CH_half_sequence.nii.gz"
 
-    path_2ch = r"D:\Projects\Echo_Analysis\test_cases\patient0233\patient0233_2CH_half_sequence.nii.gz"
+    path_2ch = r"F:/Cardiac_Ultrasound_Analysis/test_cases/patient0233/patient0233_2CH_half_sequence.nii.gz"
 
     # Load segmentation model
     model, device = load_segmentation_model()
