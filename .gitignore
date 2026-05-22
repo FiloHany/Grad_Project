@@ -2,7 +2,7 @@
 #  CardioVision — .gitignore
 # ───────────────────────────────────────────────
 
-# ── Python ──────────────────────────────────────
+# ── Python byte-code ──────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
@@ -14,57 +14,64 @@ dist/
 build/
 .eggs/
 
-# ── Virtual environment ──────────────────────────
+# ── Virtual environment ───────────────────────
 ENV/
 env/
 venv/
 .venv/
 .conda/
 
-# ── Runtime: uploaded patient files ─────────────
-# NIfTI files uploaded by users at runtime.
-# Never commit patient data.
+# ── Frontend toolchain ────────────────────────
+# node_modules is always re-installed from package.json
+frontend/node_modules/
+# Vite local dev cache
+frontend/.vite/
+
+# ── Built frontend assets ─────────────────────
+# app/static/ contains the Vite production build.
+# It IS committed so Railway/Docker can serve the
+# SPA without running a separate npm build step.
+# Do NOT add app/static/ here.
+
+# ── Runtime: uploaded patient files ──────────
+# NIfTI files uploaded by users — never commit patient data.
 uploads/
 
-# ── Runtime: job state + generated outputs ───────
-# All job results (state.json, GIFs, PNGs) are
-# generated at runtime and are patient-specific.
+# ── Runtime: job state + generated outputs ───
+# All results (state.json, GIFs, PNGs) are generated
+# at runtime and are patient-specific.
 jobs/
 
-# ── ML model weights ─────────────────────────────
-# .pt files are large binaries.
-# Store them separately (e.g. Google Drive / HuggingFace Hub)
-# and document the download step in README.
-# Remove these two lines if you want to keep weights in git.
-# weights/*.pt
-# weights/*.pth
+# ── Stale pipeline outputs (root-level) ───────
+# Generated when running src/main_pipeline.py directly.
+outputs/
 
-# ── Environment variables ────────────────────────
+# ── Environment variables ─────────────────────
 .env
 .env.*
 !.env.example
 
-# ── IDE / editor ─────────────────────────────────
+# ── IDE / editor ──────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# ── OS ───────────────────────────────────────────
+# ── OS ────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# ── Jupyter ──────────────────────────────────────
+# ── Jupyter ───────────────────────────────────
 .ipynb_checkpoints/
 *.ipynb
 
-# ── Pytest / coverage ────────────────────────────
+# ── Pytest / coverage ─────────────────────────
 .pytest_cache/
 .coverage
 htmlcov/
 
-# ── Logs ─────────────────────────────────────────
+# ── Logs ──────────────────────────────────────
 *.log
 logs/

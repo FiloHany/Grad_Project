@@ -2,7 +2,7 @@
 Job store — in-memory dict backed by per-job JSON files.
 
 Each job lives at  jobs/{job_id}/state.json
-On startup all existing jobs are loaded from disk so state survives restarts.
+History is intentionally NOT reloaded on startup; run.py wipes the dirs first.
 """
 
 import json
@@ -51,7 +51,7 @@ def _load_all() -> None:
 # Public API
 # --------------------------------------------------
 
-def create_job(job_id: str, study_id: str) -> dict:
+def create_job(job_id: str, study_id: str, patient_name: str = None, patient_id: str = None) -> dict:
     data = {
         "job_id": job_id,
         "study_id": study_id,
@@ -64,6 +64,8 @@ def create_job(job_id: str, study_id: str) -> dict:
         "created_at": datetime.utcnow().isoformat(),
         "measurements": None,
         "visualizations": None,
+        "patient_name": patient_name,
+        "patient_id": patient_id,
     }
     with _lock:
         _jobs[job_id] = data
@@ -90,5 +92,3 @@ def list_jobs() -> list:
         return [dict(j) for j in _jobs.values()]
 
 
-# Load any jobs persisted from previous runs
-_load_all()

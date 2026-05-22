@@ -110,6 +110,9 @@ def run_full_pipeline(
 
     # ---- Stage 5: Visualizations -----------------------------------------
     _update("visualization", 80)
+    # The ML visualization functions write to the repo-level outputs/ dir.
+    # Ensure it exists (run.py deletes it on startup for a clean session).
+    _REPO_OUTPUTS.mkdir(parents=True, exist_ok=True)
     create_gifs(data_4ch, preds_4ch)
     visualize_ed_es(data_4ch, preds_4ch, ED_frame, ES_frame)
 

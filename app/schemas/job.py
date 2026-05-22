@@ -28,3 +28,5 @@ class JobStatusResponse(BaseModel):
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
     created_at: str
+    patient_name: Optional[str] = None
+    patient_id: Optional[str] = None

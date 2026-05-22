@@ -1,5 +1,6 @@
 """
 Jobs routes
+  GET /api/jobs                         — list all jobs
   GET /api/jobs/{job_id}                — job status (poll this)
   GET /api/jobs/{job_id}/measurements   — clinical measurements
   GET /api/jobs/{job_id}/visualizations — image / GIF URLs
@@ -12,6 +13,20 @@ from app.schemas.job import JobStatusResponse
 from app.storage import job_store
 
 router = APIRouter()
+
+
+# --------------------------------------------------
+# List all jobs
+# --------------------------------------------------
+
+@router.get(
+    "",
+    summary="List all analysis jobs",
+)
+def list_jobs():
+    """Returns all jobs sorted by creation date (newest first)."""
+    jobs = job_store.list_jobs()
+    return sorted(jobs, key=lambda j: j.get("created_at", ""), reverse=True)
 
 
 # --------------------------------------------------
@@ -59,6 +74,8 @@ def get_job_status(job_id: str):
         started_at=job.get("started_at"),
         completed_at=job.get("completed_at"),
         created_at=job["created_at"],
+        patient_name=job.get("patient_name"),
+        patient_id=job.get("patient_id"),
     )
 
 
@@ -109,6 +126,8 @@ def get_report(job_id: str):
     return {
         "job_id": job_id,
         "study_id": job["study_id"],
+        "patient_name": job.get("patient_name"),
+        "patient_id": job.get("patient_id"),
         "generated_at": job["completed_at"],
         "diagnosis": job["measurements"]["diagnosis"],
         "ef_final": job["measurements"]["ef_final"],

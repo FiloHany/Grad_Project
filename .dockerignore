@@ -1,0 +1,41 @@
+# ── Python virtual environment (4+ GB, never copy into image) ─────────────────
+ENV/
+env/
+venv/
+.venv/
+
+# ── Frontend toolchain (not needed in image, app/static/ has the built output) ─
+frontend/node_modules/
+frontend/dist/
+
+# ── Git & IDE ──────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+.vscode/
+.idea/
+
+# ── Python byte-code ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ── Runtime directories (created fresh by run.py on every start) ──────────────
+jobs/
+uploads/
+outputs/
+
+# ── Test data (not needed in production image) ────────────────────────────────
+test_cases/
+
+# ── Docs & dev files ──────────────────────────────────────────────────────────
+README.md
+schema.drawio
+*.md
+.env
+.env.*
+
+# ── OS noise ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

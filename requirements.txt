@@ -1,10 +1,29 @@
-nibabel
-opencv-python
-imageio
-# torch
-# torchvision
+# ─────────────────────────────────────────────────────────────────────────────
+#  CardioVision — Python dependencies
+#
+#  PyTorch is NOT listed here because its index URL differs by platform:
+#
+#    CPU (Railway / VPS without GPU):
+#      pip install torch==2.3.1+cpu torchvision==0.18.1+cpu \
+#                  --extra-index-url https://download.pytorch.org/whl/cpu
+#
+#    GPU (local workstation with CUDA):
+#      pip install torch torchvision
+#
+#  The Dockerfile handles this automatically for container builds.
+#  For local dev: activate your venv, install torch manually, then:
+#      pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
 
-# Product / API layer
-fastapi
-uvicorn[standard]
-python-multipart
+# ── Medical imaging ───────────────────────────────────────────────────────────
+nibabel>=5.2.0
+
+# ── Computer vision / image processing ───────────────────────────────────────
+opencv-python-headless>=4.9.0   # headless: no GUI deps needed on server
+imageio>=2.34.0
+imageio[ffmpeg]
+
+# ── API layer ─────────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9

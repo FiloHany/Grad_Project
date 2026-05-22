@@ -4,12 +4,14 @@ Studies routes
   POST /api/studies/{study_id}/analyze — create and queue an analysis job
 """
 
+import json
 import uuid
 import shutil
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.schemas.study import StudyUploadResponse
 from app.storage import job_store
@@ -50,6 +52,8 @@ def _validate_nifti(upload: UploadFile) -> None:
 async def upload_study(
     file_4ch: UploadFile = File(..., description="4-Chamber view (.nii / .nii.gz)"),
     file_2ch: UploadFile = File(..., description="2-Chamber view (.nii / .nii.gz)"),
+    patient_name: Optional[str] = Form(None, description="Patient full name"),
+    patient_id: Optional[str] = Form(None, description="Hospital patient ID"),
 ):
     """
     Upload both NIfTI sequences for a single echocardiography study.
@@ -68,10 +72,18 @@ async def upload_study(
     with open(study_dir / "2ch.nii.gz", "wb") as f:
         shutil.copyfileobj(file_2ch.file, f)
 
+    study_info = {
+        "patient_name": patient_name or None,
+        "patient_id": patient_id or None,
+        "created_at": datetime.utcnow().isoformat(),
+    }
+    with open(study_dir / "study_info.json", "w", encoding="utf-8") as f:
+        json.dump(study_info, f)
+
     return StudyUploadResponse(
         study_id=study_id,
         status="uploaded",
-        created_at=datetime.utcnow().isoformat(),
+        created_at=study_info["created_at"],
         message="Files saved. POST /api/studies/{study_id}/analyze to start analysis.",
     )
 
@@ -96,8 +108,22 @@ def analyze_study(study_id: str):
             detail="Both 4CH and 2CH files must be present. Re-upload the study.",
         )
 
+    patient_name = patient_id_val = None
+    info_file = study_dir / "study_info.json"
+    if info_file.exists():
+        try:
+            with open(info_file, encoding="utf-8") as f:
+                info = json.load(f)
+            patient_name = info.get("patient_name")
+            patient_id_val = info.get("patient_id")
+        except Exception:
+            pass
+
     job_id = str(uuid.uuid4())
-    job = job_store.create_job(job_id=job_id, study_id=study_id)
+    job = job_store.create_job(
+        job_id=job_id, study_id=study_id,
+        patient_name=patient_name, patient_id=patient_id_val,
+    )
     job_service.launch_job(job_id)
 
     return {
