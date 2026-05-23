@@ -1,58 +1,79 @@
-import { Tag, Space, Tooltip, Avatar } from 'antd'
-import { SyncOutlined, UserOutlined } from '@ant-design/icons'
+import { Sun, Moon, UserCircle, Loader2 } from 'lucide-react'
+import { useTheme } from '../../context/ThemeContext'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 export default function AppHeader({ title, isAnalyzing, apiOnline, doctor }) {
+  const { theme, toggleTheme } = useTheme()
+  const { logout }             = useAuth()
+  const navigate               = useNavigate()
+
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
   })
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#111827', letterSpacing: -0.1 }}>{title}</span>
+    <header className="h-16 flex items-center justify-between px-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800 sticky top-0 z-40 shadow-sm">
+      {/* Left: title + processing badge */}
+      <div className="flex items-center gap-3">
+        <span className="text-base font-bold text-gray-800 dark:text-gray-100 tracking-tight">{title}</span>
         {isAnalyzing && (
-          <Tag icon={<SyncOutlined spin />} color="processing" style={{ fontSize: 11, fontWeight: 600 }}>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-semibold rounded-full border border-indigo-200 dark:border-indigo-700">
+            <Loader2 className="w-3 h-3 animate-spin" />
             Processing
-          </Tag>
+          </span>
         )}
       </div>
 
-      <Space size={12} align="center">
-        <span style={{ fontSize: 11.5, color: '#9ca3af', fontWeight: 500 }}>{today}</span>
-        <div style={{ width: 1, height: 16, background: '#e8ecf4' }} />
+      {/* Right: date + status + theme + user */}
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-gray-400 dark:text-gray-500 font-medium hidden md:block">{today}</span>
 
-        <Tooltip title={apiOnline ? 'All systems operational' : 'Backend unreachable'}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '4px 10px', borderRadius: 20,
-            background: apiOnline ? 'rgba(82,196,26,0.08)' : 'rgba(255,77,79,0.08)',
-            border: `1px solid ${apiOnline ? 'rgba(82,196,26,0.25)' : 'rgba(255,77,79,0.25)'}`,
-          }}>
-            <div style={{
-              width: 7, height: 7, borderRadius: '50%',
-              background: apiOnline ? '#52c41a' : '#ff4d4f',
-              boxShadow: apiOnline ? '0 0 5px rgba(82,196,26,0.7)' : '0 0 5px rgba(255,77,79,0.7)',
-            }} />
-            <span style={{ fontSize: 11, fontWeight: 600, color: apiOnline ? '#389e0d' : '#cf1322' }}>
-              {apiOnline === null ? 'Checking…' : apiOnline ? 'Online' : 'Offline'}
-            </span>
-          </div>
-        </Tooltip>
+        <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 hidden md:block" />
 
+        {/* API status dot */}
+        <div
+          title={apiOnline ? 'All systems operational' : 'Backend unreachable'}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+            apiOnline
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
+              : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
+          }`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${
+            apiOnline === null ? 'bg-gray-400 animate-pulse'
+              : apiOnline ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.7)]'
+              : 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]'
+          }`} />
+          {apiOnline === null ? 'Checking…' : apiOnline ? 'Online' : 'Offline'}
+        </div>
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggleTheme}
+          aria-label="Toggle theme"
+          className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-105 transform transition-all duration-200"
+        >
+          {theme === 'dark'
+            ? <Sun className="w-4 h-4 text-yellow-400" />
+            : <Moon className="w-4 h-4 text-indigo-600" />}
+        </button>
+
+        {/* Doctor name */}
         {doctor && (
           <>
-            <div style={{ width: 1, height: 16, background: '#e8ecf4' }} />
-            <Tooltip title={`${doctor.full_name}${doctor.specialty ? ' · ' + doctor.specialty : ''}`}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'default' }}>
-                <Avatar size={28} icon={<UserOutlined />} style={{ background: 'linear-gradient(135deg,#1677ff,#003eb3)' }} />
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  Dr. {doctor.full_name.split(' ').pop()}
-                </span>
+            <div className="w-px h-4 bg-gray-200 dark:bg-gray-700" />
+            <div className="flex items-center gap-2 cursor-default">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <UserCircle className="w-4 h-4 text-white" />
               </div>
-            </Tooltip>
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 max-w-[120px] truncate hidden sm:block">
+                Dr. {doctor.full_name.split(' ').pop()}
+              </span>
+            </div>
           </>
         )}
-      </Space>
-    </div>
+      </div>
+    </header>
   )
 }

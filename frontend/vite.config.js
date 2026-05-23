@@ -10,8 +10,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          antd: ['antd', '@ant-design/icons'],
+          vendor:  ['react', 'react-dom', 'react-router-dom'],
+          antd:    ['antd', '@ant-design/icons'],
+          lucide:  ['lucide-react'],
         },
       },
     },
