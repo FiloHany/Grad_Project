@@ -102,3 +102,25 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", summary="Get the current doctor's profile")
 def get_me(doctor: Doctor = Depends(get_current_doctor)):
     return doctor.to_dict()
+
+
+class UpdateProfileRequest(BaseModel):
+    full_name: Optional[str] = None
+    specialty: Optional[str] = None
+
+
+@router.patch("/me", summary="Update own profile (name and/or specialty)")
+def update_me(
+    req:    UpdateProfileRequest,
+    doctor: Doctor  = Depends(get_current_doctor),
+    db:     Session = Depends(get_db),
+):
+    if req.full_name is not None:
+        stripped = req.full_name.strip()
+        if stripped:
+            doctor.full_name = stripped
+    if req.specialty is not None:
+        doctor.specialty = req.specialty or None
+    db.commit()
+    db.refresh(doctor)
+    return doctor.to_dict()

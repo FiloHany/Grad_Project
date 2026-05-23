@@ -88,3 +88,14 @@ export async function checkHealth() {
   try { const r = await fetch('/health'); return r.ok }
   catch { return false }
 }
+
+export async function updateProfile(data) {
+  const r = await fetch('/api/auth/me', {
+    method: 'PATCH',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (r.status === 401) { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem('cv_doctor'); window.location.href = '/login'; return }
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Profile update failed') }
+  return r.json()
+}
