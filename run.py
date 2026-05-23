@@ -6,9 +6,10 @@ Usage:
     python run.py --port 8080
 
 Notes:
-  - reload=False is intentional: hot-reload restarts the process and kills
-    background inference threads mid-run.
-  - Job and upload history is cleared on every start (fresh session).
+  - reload=False: hot-reload kills background inference threads mid-run.
+  - uploads/ is cleaned on startup (NIfTI files are large, not needed after processing).
+  - jobs/   is kept across restarts (GIF/PNG outputs must persist for report history).
+  - The database is initialised and the job cache is loaded inside app.main (FastAPI startup event).
 """
 
 import argparse
@@ -18,9 +19,9 @@ import socket
 import sys
 from pathlib import Path
 
-_REPO_DIR   = Path(__file__).resolve().parent
-_JOBS_DIR   = _REPO_DIR / "jobs"
+_REPO_DIR    = Path(__file__).resolve().parent
 _UPLOADS_DIR = _REPO_DIR / "uploads"
+_JOBS_DIR    = _REPO_DIR / "jobs"
 
 
 def _port_in_use(port: int) -> bool:
@@ -28,42 +29,33 @@ def _port_in_use(port: int) -> bool:
         return s.connect_ex(("127.0.0.1", port)) == 0
 
 
-def _clean_runtime_dirs() -> None:
-    """Wipe jobs/ and uploads/ so every session starts with a clean slate."""
-    for d in (_JOBS_DIR, _UPLOADS_DIR):
-        if d.exists():
-            shutil.rmtree(d)
-        d.mkdir(parents=True)
+def _prepare_dirs() -> None:
+    """Clean uploads (temp NIfTI files), keep jobs (media outputs)."""
+    if _UPLOADS_DIR.exists():
+        shutil.rmtree(_UPLOADS_DIR)
+    _UPLOADS_DIR.mkdir(parents=True)
+    _JOBS_DIR.mkdir(exist_ok=True)
 
 
 def main():
-    # Railway (and most PaaS) inject PORT via environment; --port flag overrides locally.
     env_port = int(os.environ.get("PORT", 8000))
 
-    parser = argparse.ArgumentParser(description="CardioVision API server")
-    parser.add_argument("--port", type=int, default=env_port, help="Port to listen on (default: $PORT or 8000)")
+    parser = argparse.ArgumentParser(description="CardioVision server")
+    parser.add_argument("--port", type=int, default=env_port)
     args = parser.parse_args()
 
-    # Only check port availability when running locally (PaaS handles this externally).
     if not os.environ.get("PORT") and _port_in_use(args.port):
         print(
             f"\n[ERROR] Port {args.port} is already in use.\n"
-            f"  Option 1 — stop the existing server first, then run again.\n"
-            f"  Option 2 — use a different port:  python run.py --port 8080\n"
+            f"  Stop the existing server, or run:  python run.py --port 8080\n"
         )
         sys.exit(1)
 
-    _clean_runtime_dirs()
+    _prepare_dirs()
 
     import uvicorn
-    print(f"\n  CardioVision  →  http://0.0.0.0:{args.port}\n")
-
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=args.port,
-        reload=False,
-    )
+    print(f"\n  CardioVision  →  http://localhost:{args.port}\n")
+    uvicorn.run("app.main:app", host="0.0.0.0", port=args.port, reload=False)
 
 
 if __name__ == "__main__":

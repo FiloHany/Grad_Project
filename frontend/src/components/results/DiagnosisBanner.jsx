@@ -1,19 +1,18 @@
 import { DIAG_CONFIG } from '../../constants'
 import { CheckCircleFilled, WarningFilled, CloseCircleFilled } from '@ant-design/icons'
 
+// Keys must match exactly what get_ef_class() returns in cardiac_metrics.py
 const SEVERITY_LEVELS = [
-  { key: 'Normal',                color: '#52c41a', label: 'Normal' },
-  { key: 'Mild Hypokinesia',      color: '#a0d911', label: 'Mild' },
-  { key: 'Moderate Hypokinesia',  color: '#faad14', label: 'Moderate' },
-  { key: 'Severe Hypokinesia',    color: '#fa8c16', label: 'Severe' },
-  { key: 'Akinesia',              color: '#ff4d4f', label: 'Critical' },
+  { key: 'Normal',               color: '#52c41a', label: 'Normal' },
+  { key: 'Mild Dysfunction',     color: '#a0d911', label: 'Mild' },
+  { key: 'Moderate Dysfunction', color: '#faad14', label: 'Moderate' },
+  { key: 'Severe Dysfunction',   color: '#ff4d4f', label: 'Severe' },
 ]
 
 function SeverityIcon({ diagnosis }) {
-  if (diagnosis === 'Normal') return <CheckCircleFilled style={{ fontSize: 22, color: '#52c41a' }} />
-  if (diagnosis?.includes('Mild')) return <WarningFilled style={{ fontSize: 22, color: '#a0d911' }} />
-  if (diagnosis?.includes('Moderate')) return <WarningFilled style={{ fontSize: 22, color: '#faad14' }} />
-  if (diagnosis?.includes('Severe')) return <WarningFilled style={{ fontSize: 22, color: '#fa8c16' }} />
+  if (diagnosis === 'Normal')              return <CheckCircleFilled style={{ fontSize: 22, color: '#52c41a' }} />
+  if (diagnosis === 'Mild Dysfunction')    return <WarningFilled style={{ fontSize: 22, color: '#a0d911' }} />
+  if (diagnosis === 'Moderate Dysfunction') return <WarningFilled style={{ fontSize: 22, color: '#faad14' }} />
   return <CloseCircleFilled style={{ fontSize: 22, color: '#ff4d4f' }} />
 }
 

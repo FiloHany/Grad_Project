@@ -1,75 +1,83 @@
 """
-Job store — in-memory dict backed by per-job JSON files.
+Hybrid job store: in-memory dict (fast real-time reads) + SQLite/PostgreSQL (persistence).
 
-Each job lives at  jobs/{job_id}/state.json
-History is intentionally NOT reloaded on startup; run.py wipes the dirs first.
+  • create_job()  — adds to memory + DB
+  • update_job()  — updates memory always; persists to DB on important state changes
+  • get_job()     — memory-only (fast)
+  • list_jobs()   — memory, optionally filtered by doctor_id
+  • load_all()    — called at startup: hydrates memory from DB, marks orphaned jobs failed
 """
 
-import json
 import threading
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-JOBS_DIR = BASE_DIR / "jobs"
-JOBS_DIR.mkdir(exist_ok=True)
-
-_lock = threading.Lock()
+_lock  = threading.Lock()
 _jobs: dict = {}
 
 
-# --------------------------------------------------
-# Internal helpers
-# --------------------------------------------------
+# ── DB helpers (create a fresh session per call — safe for background threads) ─
 
-def _job_dir(job_id: str) -> Path:
-    d = JOBS_DIR / job_id
-    d.mkdir(exist_ok=True)
-    return d
+def _db():
+    from app.database.db import SessionLocal
+    return SessionLocal()
 
 
-def _persist(job_id: str, data: dict) -> None:
-    path = _job_dir(job_id) / "state.json"
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, default=str)
+def _write_to_db(data: dict) -> None:
+    """Upsert a job record. Silently swallows DB errors so the app keeps running."""
+    from app.database.models import JobRecord
+    try:
+        db = _db()
+        rec = db.query(JobRecord).filter(JobRecord.job_id == data["job_id"]).first()
+        if rec:
+            rec.data   = dict(data)
+            rec.status = data.get("status", "queued")
+        else:
+            rec = JobRecord(
+                job_id    = data["job_id"],
+                doctor_id = data.get("doctor_id"),
+                status    = data.get("status", "queued"),
+                data      = dict(data),
+            )
+            db.add(rec)
+        db.commit()
+    except Exception:
+        pass
+    finally:
+        try:
+            db.close()
+        except Exception:
+            pass
 
 
-def _load_all() -> None:
-    for job_dir in JOBS_DIR.iterdir():
-        state_file = job_dir / "state.json"
-        if state_file.is_file():
-            try:
-                with open(state_file, encoding="utf-8") as f:
-                    data = json.load(f)
-                _jobs[data["job_id"]] = data
-            except Exception:
-                pass  # corrupt state file — skip
+# ── Public API ─────────────────────────────────────────────────────────────────
 
-
-# --------------------------------------------------
-# Public API
-# --------------------------------------------------
-
-def create_job(job_id: str, study_id: str, patient_name: str = None, patient_id: str = None) -> dict:
+def create_job(
+    job_id:       str,
+    study_id:     str,
+    doctor_id:    Optional[int] = None,
+    patient_name: Optional[str] = None,
+    patient_id:   Optional[str] = None,
+) -> dict:
     data = {
-        "job_id": job_id,
-        "study_id": study_id,
-        "status": "queued",
-        "stage": None,
+        "job_id":       job_id,
+        "study_id":     study_id,
+        "doctor_id":    doctor_id,
+        "patient_name": patient_name,
+        "patient_id":   patient_id,
+        "status":       "queued",
+        "stage":        None,
         "progress_pct": 0,
         "error_message": None,
-        "started_at": None,
+        "started_at":   None,
         "completed_at": None,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at":   datetime.utcnow().isoformat(),
         "measurements": None,
         "visualizations": None,
-        "patient_name": patient_name,
-        "patient_id": patient_id,
     }
     with _lock:
         _jobs[job_id] = data
-        _persist(job_id, data)
+    _write_to_db(data)
     return data
 
 
@@ -83,12 +91,55 @@ def update_job(job_id: str, **kwargs) -> Optional[dict]:
         if job_id not in _jobs:
             return None
         _jobs[job_id].update(kwargs)
-        _persist(job_id, _jobs[job_id])
-        return dict(_jobs[job_id])
+        data = dict(_jobs[job_id])
+
+    # Persist only on meaningful state transitions (not every progress % tick)
+    _PERSIST_KEYS = {"status", "measurements", "visualizations", "error_message",
+                     "completed_at", "started_at"}
+    if _PERSIST_KEYS.intersection(kwargs.keys()):
+        _write_to_db(data)
+
+    return data
 
 
-def list_jobs() -> list:
+def list_jobs(doctor_id: Optional[int] = None) -> list:
     with _lock:
-        return [dict(j) for j in _jobs.values()]
+        jobs = list(_jobs.values())
+    if doctor_id is not None:
+        jobs = [j for j in jobs if j.get("doctor_id") == doctor_id]
+    return [dict(j) for j in jobs]
 
 
+def load_all() -> None:
+    """
+    Called once at startup. Loads all persisted jobs into memory.
+    Any job left in running/queued state is marked failed (background threads are dead).
+    """
+    from app.database.models import JobRecord
+    try:
+        db = _db()
+        records = db.query(JobRecord).all()
+        orphan_ids = []
+
+        with _lock:
+            for rec in records:
+                data = dict(rec.data) if rec.data else {}
+                if data.get("status") in ("running", "queued"):
+                    data["status"]        = "failed"
+                    data["error_message"] = "Server was restarted while this job was in progress."
+                    orphan_ids.append(rec.job_id)
+                _jobs[data["job_id"]] = data
+
+        # Persist the failed status back
+        for job_id in orphan_ids:
+            with _lock:
+                d = dict(_jobs[job_id])
+            _write_to_db(d)
+
+    except Exception as e:
+        print(f"[job_store] Warning: could not load jobs from DB — {e}")
+    finally:
+        try:
+            db.close()
+        except Exception:
+            pass

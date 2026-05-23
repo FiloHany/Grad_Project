@@ -1,25 +1,19 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #  CardioVision — Python dependencies
 #
-#  PyTorch is NOT listed here because its index URL differs by platform:
-#
-#    CPU (Railway / VPS without GPU):
-#      pip install torch==2.3.1+cpu torchvision==0.18.1+cpu \
-#                  --extra-index-url https://download.pytorch.org/whl/cpu
-#
-#    GPU (local workstation with CUDA):
-#      pip install torch torchvision
-#
-#  The Dockerfile handles this automatically for container builds.
-#  For local dev: activate your venv, install torch manually, then:
-#      pip install -r requirements.txt
+#  PyTorch is NOT listed here (index URL differs by platform).
+#  Install it first:
+#    CPU  →  pip install torch==2.3.1+cpu torchvision==0.18.1+cpu \
+#                        --extra-index-url https://download.pytorch.org/whl/cpu
+#    GPU  →  pip install torch torchvision
+#  The Dockerfile handles this automatically.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Medical imaging ───────────────────────────────────────────────────────────
 nibabel>=5.2.0
 
-# ── Computer vision / image processing ───────────────────────────────────────
-opencv-python-headless>=4.9.0   # headless: no GUI deps needed on server
+# ── Computer vision ───────────────────────────────────────────────────────────
+opencv-python-headless>=4.9.0
 imageio>=2.34.0
 imageio[ffmpeg]
 
@@ -27,3 +21,11 @@ imageio[ffmpeg]
 fastapi>=0.111.0
 uvicorn[standard]>=0.29.0
 python-multipart>=0.0.9
+
+# ── Database (SQLAlchemy + SQLite default, PostgreSQL optional) ───────────────
+sqlalchemy>=2.0.0
+
+# ── Authentication (JWT + bcrypt) ─────────────────────────────────────────────
+# NOTE: passlib 1.7.4 is incompatible with bcrypt >= 4.x — use bcrypt directly.
+python-jose[cryptography]>=3.3.0
+bcrypt>=4.0.0

@@ -72,6 +72,16 @@ desktop.ini
 .coverage
 htmlcov/
 
+# ── Old version (kept local for reference only) ──────────────────────────────
+Echo-proj/
+
+# ── Database (SQLite runtime file) ───────────
+# Created automatically at first startup.
+# In production, DATABASE_URL env var points to PostgreSQL.
+cardiovision.db
+cardiovision.db-shm
+cardiovision.db-wal
+
 # ── Logs ──────────────────────────────────────
 *.log
 logs/
