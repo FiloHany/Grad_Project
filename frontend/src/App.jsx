@@ -86,7 +86,7 @@ function AppShell() {
 
   return (
     // Full-height flex layout: fixed sidebar on left, scrollable main on right
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-[#030712]">
       <AppSidebar
         activeView={activeNav}
         onNavigate={handleNavigate}
@@ -95,8 +95,8 @@ function AppShell() {
         doctor={doctor}
       />
 
-      {/* Main column — offset by sidebar width */}
-      <div className="flex flex-col flex-1 ml-60 min-h-screen">
+      {/* Main column — offset by sidebar width (w-60 = 15rem = 240px) */}
+      <div className="flex flex-col flex-1 ml-60 min-h-screen overflow-hidden">
         <AppHeader
           title={pageTitle}
           isAnalyzing={view === 'new-analysis' && isAnalyzing}
