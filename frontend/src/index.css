@@ -73,7 +73,7 @@ input:-webkit-autofill:focus {
 .ant-menu-dark .ant-menu-item-selected { background: rgba(22,119,255,0.2) !important; }
 .ant-menu-dark .ant-menu-item:hover { background: rgba(255,255,255,0.07) !important; }
 
-/* Table header */
+/* Table header — light mode */
 .ant-table-thead > tr > th {
   font-size: 11px !important;
   font-weight: 700 !important;
@@ -81,6 +81,18 @@ input:-webkit-autofill:focus {
   letter-spacing: 0.6px !important;
   color: #9ca3af !important;
   background: #fafbff !important;
+}
+/* Table header — dark mode */
+.dark .ant-table-thead > tr > th {
+  background: #111827 !important;
+  color: #6b7280 !important;
+  border-bottom-color: #374151 !important;
+}
+.dark .ant-table-tbody > tr > td {
+  border-bottom-color: #1f2937 !important;
+}
+.dark .ant-table-tbody > tr:hover > td {
+  background: rgba(99,102,241,0.06) !important;
 }
 
 /* Card hover lift */

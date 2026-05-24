@@ -1,10 +1,18 @@
 import { Card, Table, Tag, Button, Typography, Space, Empty } from 'antd'
 import { RightOutlined, PlusOutlined } from '@ant-design/icons'
 import { fmtDate, diagTagColor } from '../constants'
+import { useTheme } from '../context/ThemeContext'
 
 const { Text, Title } = Typography
 
 export default function HistoryPage({ jobs, onViewJob, onNewAnalysis }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+  const textMain = isDark ? '#f9fafb' : '#111827'
+  const textSub  = isDark ? '#9ca3af' : '#6b7280'
+  const cardBg   = isDark ? '#1f2937' : '#ffffff'
+  const cardBorder = isDark ? '#374151' : '#f0f0f0'
+
   const sorted = [...jobs].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
   const columns = [
@@ -13,10 +21,10 @@ export default function HistoryPage({ jobs, onViewJob, onNewAnalysis }) {
       width: '22%',
       render: (_, r) => (
         <div>
-          <div style={{ fontWeight: 600, fontSize: 13, color: '#111827' }}>
+          <div style={{ fontWeight: 600, fontSize: 13, color: textMain }}>
             {r.patient_name || <Text type="secondary" style={{ fontStyle: 'italic', fontWeight: 400, fontSize: 13 }}>Anonymous</Text>}
           </div>
-          {r.patient_id && <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>ID: {r.patient_id}</div>}
+          {r.patient_id && <div style={{ fontSize: 11, color: textSub, marginTop: 1 }}>ID: {r.patient_id}</div>}
         </div>
       ),
     },
@@ -47,7 +55,7 @@ export default function HistoryPage({ jobs, onViewJob, onNewAnalysis }) {
       width: '11%',
       align: 'right',
       render: (_, r) => r.measurements?.ef_final != null
-        ? <span style={{ fontWeight: 800, color: '#1677ff', fontSize: 15 }}>{r.measurements.ef_final.toFixed(1)}%</span>
+        ? <span style={{ fontWeight: 800, color: '#6366f1', fontSize: 15 }}>{r.measurements.ef_final.toFixed(1)}%</span>
         : <Text type="secondary">—</Text>,
     },
     {
@@ -84,13 +92,14 @@ export default function HistoryPage({ jobs, onViewJob, onNewAnalysis }) {
     <div className="fade-in-up">
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 22 }}>
         <div>
-          <Title level={5} style={{ margin: '0 0 2px' }}>Study History</Title>
+          <Title level={5} style={{ margin: '0 0 2px', color: textMain }}>Study History</Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
             {sorted.length} {sorted.length === 1 ? 'study' : 'studies'} in this session
           </Text>
         </div>
         {onNewAnalysis && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={onNewAnalysis} style={{ borderRadius: 8, fontWeight: 600 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={onNewAnalysis}
+            style={{ borderRadius: 8, fontWeight: 600, background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none' }}>
             New Analysis
           </Button>
         )}
@@ -98,7 +107,12 @@ export default function HistoryPage({ jobs, onViewJob, onNewAnalysis }) {
 
       <Card
         bordered={false}
-        style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.07)', borderRadius: 12, border: '1px solid #f0f0f0' }}
+        style={{
+          boxShadow: isDark ? '0 2px 10px rgba(0,0,0,0.3)' : '0 2px 10px rgba(0,0,0,0.07)',
+          borderRadius: 12,
+          border: `1px solid ${cardBorder}`,
+          background: cardBg,
+        }}
       >
         <Table
           dataSource={sorted}
