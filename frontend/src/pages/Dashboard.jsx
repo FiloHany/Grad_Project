@@ -535,41 +535,104 @@ export default function Dashboard({ jobs, onNewAnalysis, onViewJob }) {
         </Col>
       </Row>
 
-      {/* ── About card ── */}
-      <Card
-        bordered={false}
-        style={{
-          boxShadow: isDark ? '0 1px 6px rgba(0,0,0,0.3)' : '0 1px 6px rgba(0,0,0,0.07)',
-          borderRadius: 12,
-          border: `1px solid ${isDark ? 'rgba(99,102,241,0.2)' : '#c4b5fd'}`,
+      {/* ── About / Technology card ── */}
+      <div style={{
+        borderRadius: 16,
+        overflow: 'hidden',
+        border: `1px solid ${isDark ? 'rgba(99,102,241,0.25)' : '#c4b5fd'}`,
+        boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(99,102,241,0.1)',
+        position: 'relative',
+      }}>
+        {/* Gradient background */}
+        <div style={{
           background: isDark
-            ? 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(168,85,247,0.06) 100%)'
-            : 'linear-gradient(135deg, #fafcff 0%, #f0f4ff 100%)',
-        }}
-        bodyStyle={{ padding: '22px 26px' }}
-      >
-        <Row gutter={16} align="middle">
-          <Col flex="auto">
-            <Title level={5} style={{ margin: '0 0 8px', color: textMain }}>About CardioVision</Title>
-            <Text type="secondary" style={{ fontSize: 13, lineHeight: 1.75, display: 'block' }}>
-              Automated cardiac function assessment from echocardiography using
-              <strong> nnU-Net</strong> segmentation and <strong>R(2+1)D-18</strong> with spatial + temporal attention.
-              Computes EF, EDV, ESV, Stroke Volume via Biplane Simpson method.
-            </Text>
-            <Space size={6} wrap style={{ marginTop: 14 }}>
-              {['nnU-Net', 'Biplane Simpson', 'R(2+1)D-18', 'Ensemble EF', 'CAMUS Dataset'].map(t => (
-                <Tag key={t} color="blue" style={{ fontSize: 11, fontWeight: 500, borderRadius: 20, padding: '1px 10px' }}>{t}</Tag>
-              ))}
-            </Space>
-          </Col>
-          <Col flex="none">
-            <Button type="primary" size="large" icon={<PlusOutlined />} onClick={onNewAnalysis}
-              style={{ borderRadius: 8, height: 42, fontWeight: 600, paddingInline: 20, background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none' }}>
+            ? 'linear-gradient(135deg, #1e1b4b 0%, #0f0e20 50%, #140f2e 100%)'
+            : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
+          padding: '28px 32px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Decorative circles */}
+          {[
+            { size: 200, x: -60, y: -60, op: 0.06 },
+            { size: 140, right: 100, y: -40, op: 0.05 },
+            { size: 80,  right: -20, bottom: -20, op: 0.08 },
+          ].map((c, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              left: c.x != null ? c.x : 'auto',
+              right: c.right != null ? c.right : 'auto',
+              top: c.y != null ? c.y : 'auto',
+              bottom: c.bottom != null ? c.bottom : 'auto',
+              width: c.size, height: c.size, borderRadius: '50%',
+              background: `rgba(255,255,255,${c.op})`,
+              pointerEvents: 'none',
+            }} />
+          ))}
+
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>
+                Powered by
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
+                CardioVision AI Engine
+              </div>
+              <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, maxWidth: 540 }}>
+                Fully automated cardiac function assessment from echocardiography.
+                Combines <strong style={{ color: '#fff' }}>nnU-Net</strong> segmentation with{' '}
+                <strong style={{ color: '#fff' }}>R(2+1)D-18 + Attention</strong> for ensemble EF prediction via Biplane Simpson.
+              </div>
+            </div>
+            <Button
+              type="default"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={onNewAnalysis}
+              style={{
+                borderRadius: 12, height: 46, fontWeight: 700, paddingInline: 24,
+                background: 'rgba(255,255,255,0.15)',
+                border: '1.5px solid rgba(255,255,255,0.3)',
+                color: '#fff', backdropFilter: 'blur(8px)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                flexShrink: 0,
+              }}
+            >
               New Analysis
             </Button>
-          </Col>
-        </Row>
-      </Card>
+          </div>
+        </div>
+
+        {/* Feature chips */}
+        <div style={{
+          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.6)',
+          padding: '14px 32px',
+          display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
+          borderTop: `1px solid ${isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.15)'}`,
+          backdropFilter: 'blur(8px)',
+        }}>
+          <span style={{ fontSize: 10.5, fontWeight: 700, color: isDark ? '#475569' : '#818cf8', letterSpacing: 0.5, marginRight: 4 }}>
+            TECHNOLOGY
+          </span>
+          {[
+            { label: 'nnU-Net',         color: '#818cf8' },
+            { label: 'Biplane Simpson', color: '#a78bfa' },
+            { label: 'R(2+1)D-18',      color: '#c084fc' },
+            { label: 'Ensemble EF',     color: '#e879f9' },
+            { label: 'CAMUS Dataset',   color: '#818cf8' },
+            { label: 'Attention Gates', color: '#a78bfa' },
+          ].map(t => (
+            <span key={t.label} style={{
+              fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20,
+              background: isDark ? `${t.color}15` : `${t.color}15`,
+              border: `1px solid ${t.color}35`,
+              color: isDark ? t.color : '#5b21b6',
+            }}>
+              {t.label}
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
