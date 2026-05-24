@@ -163,109 +163,113 @@ export default function ProfilePage({ jobs = [], onNavigate }) {
       )}
 
       {/* ═══ HERO BANNER ═══════════════════════════════════════════════════════ */}
-      <div style={{
-        ...sharedCard,
-        padding: 0,
-        marginBottom: 20,
-        overflow: 'hidden',
-      }}>
-        {/* Banner gradient */}
+      <div style={{ ...sharedCard, padding: 0, marginBottom: 20, overflow: 'hidden' }}>
+
+        {/* ── Banner gradient strip ── */}
         <div style={{
-          height: 120,
+          height: 150,
           background: isDark
             ? 'linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 70%, #1e1b4b 100%)'
             : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
           position: 'relative',
           overflow: 'hidden',
         }}>
-          {/* Background decorations */}
+          {/* Decorative circles */}
           {[
-            { size: 180, x: -40, y: -60, op: 0.06 },
-            { size: 120, x: '60%', y: -30, op: 0.05 },
-            { size: 80,  x: '85%', y: 20,  op: 0.08 },
+            { size: 200, x: -60, y: -70, op: 0.07 },
+            { size: 130, x: '55%', y: -40, op: 0.05 },
+            { size: 90,  right: 60, y: 30,  op: 0.06 },
+            { size: 60,  right: -10, bottom: -10, op: 0.09 },
           ].map((c, i) => (
             <div key={i} style={{
-              position: 'absolute', left: c.x, top: c.y,
+              position: 'absolute',
+              left:   c.x     != null ? c.x     : 'auto',
+              right:  c.right != null ? c.right : 'auto',
+              top:    c.y     != null ? c.y     : 'auto',
+              bottom: c.bottom != null ? c.bottom : 'auto',
               width: c.size, height: c.size, borderRadius: '50%',
               background: `rgba(255,255,255,${c.op})`,
+              pointerEvents: 'none',
             }} />
           ))}
+
           {/* Role chip */}
           <div style={{
-            position: 'absolute', top: 16, right: 20,
-            background: 'rgba(255,255,255,0.12)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: 20, padding: '4px 12px',
-            fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
-            letterSpacing: 0.6, backdropFilter: 'blur(8px)',
+            position: 'absolute', top: 18, right: 22,
+            background: 'rgba(255,255,255,0.14)',
+            border: '1px solid rgba(255,255,255,0.25)',
+            borderRadius: 20, padding: '5px 14px',
+            fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.92)',
+            letterSpacing: 1, backdropFilter: 'blur(8px)',
           }}>
             MEDICAL PROFESSIONAL
           </div>
         </div>
 
-        {/* Profile row — avatar overlaps banner */}
-        <div style={{ padding: '0 28px 24px', marginTop: -36 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        {/* ── Profile info row (avatar straddles banner bottom) ── */}
+        <div style={{ padding: '0 28px 26px', marginTop: -44 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20 }}>
 
             {/* Avatar */}
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
               <div style={{
-                width: 80, height: 80, borderRadius: 22,
+                width: 88, height: 88, borderRadius: 24,
                 background: 'linear-gradient(135deg, #6366f1, #a855f7)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 28, fontWeight: 900, color: '#fff',
-                border: `3px solid ${cardBg}`,
-                boxShadow: '0 8px 32px rgba(99,102,241,0.5)',
+                fontSize: 30, fontWeight: 900, color: '#fff',
+                border: `4px solid ${cardBg}`,
+                boxShadow: '0 8px 32px rgba(99,102,241,0.45)',
                 letterSpacing: -1,
               }}>
                 {initials}
               </div>
               {/* Online dot */}
               <div style={{
-                position: 'absolute', bottom: 4, right: 4,
+                position: 'absolute', bottom: 6, right: 6,
                 width: 14, height: 14, borderRadius: '50%',
                 background: '#22c55e',
-                border: `2px solid ${cardBg}`,
-                boxShadow: '0 0 8px rgba(34,197,94,0.7)',
+                border: `3px solid ${cardBg}`,
+                boxShadow: '0 0 10px rgba(34,197,94,0.65)',
               }} />
             </div>
 
-            {/* Name + specialty */}
-            <div style={{ flex: 1, paddingBottom: 4 }}>
+            {/* Name + specialty — pushed below banner via paddingTop */}
+            <div style={{ flex: 1, paddingTop: 52, minWidth: 0 }}>
               {isEditing ? (
                 <input
                   value={editForm.full_name}
                   onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))}
                   style={{
-                    fontSize: 22, fontWeight: 800,
+                    fontSize: 20, fontWeight: 800,
                     background: isDark ? '#1e293b' : '#f8fafc',
-                    border: `1.5px solid ${isDark ? '#334155' : '#e2e8f0'}`,
-                    borderRadius: 8, padding: '4px 10px',
+                    border: `1.5px solid ${isDark ? '#334155' : '#cbd5e1'}`,
+                    borderRadius: 8, padding: '5px 10px',
                     color: textMain, outline: 'none',
-                    width: '100%', maxWidth: 300,
+                    width: '100%', maxWidth: 320, display: 'block', marginBottom: 4,
                   }}
                 />
               ) : (
-                <div style={{ fontSize: 22, fontWeight: 800, color: textMain, marginBottom: 2 }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: textMain, marginBottom: 3, lineHeight: 1.2 }}>
                   {doctor.full_name}
                 </div>
               )}
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#818cf8' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#818cf8', lineHeight: 1 }}>
                 {doctor.specialty || 'Medical Professional'}
               </div>
             </div>
 
-            {/* Edit controls */}
-            <div style={{ display: 'flex', gap: 8, paddingBottom: 4 }}>
+            {/* Action buttons — same paddingTop to align with name */}
+            <div style={{ paddingTop: 52, flexShrink: 0, display: 'flex', gap: 8 }}>
               {!isEditing ? (
                 <button
                   onClick={() => { setIsEditing(true); setFeedback(null) }}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '8px 16px', borderRadius: 10,
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    padding: '9px 18px', borderRadius: 10,
                     background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
                     border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
-                    cursor: 'pointer', boxShadow: '0 4px 16px rgba(99,102,241,0.35)',
+                    cursor: 'pointer', boxShadow: '0 4px 16px rgba(99,102,241,0.4)',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   <Edit3 size={13} /> Edit Profile
@@ -275,8 +279,8 @@ export default function ProfilePage({ jobs = [], onNavigate }) {
                   <button
                     onClick={handleSave} disabled={saving}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      padding: '8px 14px', borderRadius: 10,
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '9px 16px', borderRadius: 10,
                       background: saving ? '#374151' : 'linear-gradient(135deg,#059669,#10b981)',
                       border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
                       cursor: saving ? 'not-allowed' : 'pointer',
@@ -288,8 +292,8 @@ export default function ProfilePage({ jobs = [], onNavigate }) {
                   <button
                     onClick={() => { setIsEditing(false); setEditForm({ full_name: doctor.full_name, specialty: doctor.specialty || '' }); setFeedback(null) }}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      padding: '8px 14px', borderRadius: 10,
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '9px 14px', borderRadius: 10,
                       background: isDark ? '#1e293b' : '#f1f5f9',
                       border: `1px solid ${cardBorder}`,
                       color: textMain, fontSize: 13, fontWeight: 700, cursor: 'pointer',
@@ -300,6 +304,7 @@ export default function ProfilePage({ jobs = [], onNavigate }) {
                 </>
               )}
             </div>
+
           </div>
         </div>
       </div>
