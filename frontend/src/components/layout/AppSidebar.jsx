@@ -1,4 +1,4 @@
-import { LayoutDashboard, PlusCircle, History, LogOut, User, Loader2, Settings } from 'lucide-react'
+import { LayoutDashboard, PlusCircle, History, LogOut, User, Loader2, Settings, Users } from 'lucide-react'
 import { useAuth }     from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { key: 'dashboard',    Icon: LayoutDashboard, label: 'Dashboard'    },
   { key: 'new-analysis', Icon: PlusCircle,       label: 'New Analysis' },
   { key: 'history',      Icon: History,          label: 'Study History' },
+  { key: 'patients',     Icon: Users,            label: 'Patients'     },
 ]
 
 export default function AppSidebar({ activeView, onNavigate, jobCount, isAnalyzing, doctor }) {

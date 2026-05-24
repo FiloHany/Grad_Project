@@ -125,7 +125,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Remember me */}
+            {/* Remember me + forgot password */}
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input
@@ -138,6 +138,12 @@ export default function LoginPage() {
                   Remember me
                 </span>
               </label>
+              <Link
+                to="/forgot-password"
+                className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium hover:underline transition"
+              >
+                Forgot password?
+              </Link>
             </div>
 
             {/* Submit */}

@@ -7,24 +7,30 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import PrivateRoute   from './components/auth/PrivateRoute'
 import AppSidebar     from './components/layout/AppSidebar'
 import AppHeader      from './components/layout/AppHeader'
-import Dashboard      from './pages/Dashboard'
-import NewAnalysis    from './pages/NewAnalysis'
-import HistoryPage    from './pages/HistoryPage'
-import ReportView     from './pages/ReportView'
-import ProfilePage    from './pages/ProfilePage'
-import LandingPage    from './pages/LandingPage'
-import LoginPage      from './pages/LoginPage'
-import RegisterPage   from './pages/RegisterPage'
+import Dashboard         from './pages/Dashboard'
+import NewAnalysis       from './pages/NewAnalysis'
+import HistoryPage       from './pages/HistoryPage'
+import ReportView        from './pages/ReportView'
+import ProfilePage       from './pages/ProfilePage'
+import PatientsPage      from './pages/PatientsPage'
+import PatientDetailPage from './pages/PatientDetailPage'
+import LandingPage       from './pages/LandingPage'
+import LoginPage         from './pages/LoginPage'
+import RegisterPage      from './pages/RegisterPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage  from './pages/ResetPasswordPage'
 import { listJobs, checkHealth, getReport } from './api/client'
 
 const { darkAlgorithm, defaultAlgorithm } = antTheme
 
 const PAGE_TITLE = {
-  dashboard:    'Dashboard',
-  'new-analysis': 'New Analysis',
-  history:      'Study History',
-  report:       'Analysis Report',
-  profile:      'My Profile',
+  dashboard:       'Dashboard',
+  'new-analysis':  'New Analysis',
+  history:         'Study History',
+  report:          'Analysis Report',
+  profile:         'My Profile',
+  patients:        'Patients',
+  'patient-detail':'Patient Details',
 }
 
 // ── App shell ─────────────────────────────────────────────────────────────────
@@ -32,11 +38,12 @@ function AppShell() {
   const { doctor } = useAuth()
   const { theme }  = useTheme()
 
-  const [view,          setView]          = useState('dashboard')
-  const [allJobs,       setAllJobs]       = useState([])
-  const [apiOnline,     setApiOnline]     = useState(null)
-  const [isAnalyzing,   setIsAnalyzing]   = useState(false)
-  const [pendingReport, setPendingReport] = useState(null)
+  const [view,           setView]          = useState('dashboard')
+  const [allJobs,        setAllJobs]       = useState([])
+  const [apiOnline,      setApiOnline]     = useState(null)
+  const [isAnalyzing,    setIsAnalyzing]   = useState(false)
+  const [pendingReport,  setPendingReport] = useState(null)
+  const [activePatient,  setActivePatient] = useState(null)
 
   useEffect(() => {
     loadJobs()
@@ -63,11 +70,19 @@ function AppShell() {
 
   function handleNavigate(key) {
     setPendingReport(null)
+    setActivePatient(null)
     setView(key)
   }
 
+  function handleViewPatient(patient) {
+    setActivePatient(patient)
+    setView('patient-detail')
+  }
+
   const isDark    = theme === 'dark'
-  const activeNav = view === 'report' ? 'history' : view
+  const activeNav = view === 'report' ? 'history'
+                  : view === 'patient-detail' ? 'patients'
+                  : view
   const pageTitle = view === 'new-analysis' && isAnalyzing ? 'Processing Analysis' : (PAGE_TITLE[view] || '')
 
   // Sync Ant Design algorithm with current theme
@@ -121,10 +136,14 @@ function AppShell() {
               onProfileClick={() => handleNavigate('profile')}
             />
             <main className="flex-1 p-6 overflow-auto" style={{ background: bgContent }}>
-              {view === 'dashboard'    && <Dashboard  jobs={allJobs} onNewAnalysis={() => handleNavigate('new-analysis')} onViewJob={handleViewJobReport} />}
-              {view === 'new-analysis' && <NewAnalysis onJobsRefresh={loadJobs} onViewHistory={() => handleNavigate('history')} />}
-              {view === 'history'      && <HistoryPage jobs={allJobs} onViewJob={handleViewJobReport} onNewAnalysis={() => handleNavigate('new-analysis')} />}
-              {view === 'profile'      && <ProfilePage jobs={allJobs} onNavigate={handleNavigate} />}
+              {view === 'dashboard'      && <Dashboard  jobs={allJobs} onNewAnalysis={() => handleNavigate('new-analysis')} onViewJob={handleViewJobReport} />}
+              {view === 'new-analysis'   && <NewAnalysis onJobsRefresh={loadJobs} onViewHistory={() => handleNavigate('history')} />}
+              {view === 'history'        && <HistoryPage jobs={allJobs} onViewJob={handleViewJobReport} onNewAnalysis={() => handleNavigate('new-analysis')} />}
+              {view === 'profile'        && <ProfilePage jobs={allJobs} onNavigate={handleNavigate} />}
+              {view === 'patients'       && <PatientsPage jobs={allJobs} onNewAnalysis={() => handleNavigate('new-analysis')} onViewPatient={handleViewPatient} />}
+              {view === 'patient-detail' && activePatient && (
+                <PatientDetailPage patient={activePatient} jobs={allJobs} onBack={() => handleNavigate('patients')} onViewJob={handleViewJobReport} />
+              )}
               {view === 'report' && pendingReport && (
                 <ReportView report={pendingReport} onNewAnalysis={() => handleNavigate('new-analysis')} onViewHistory={() => handleNavigate('history')} />
               )}
@@ -141,11 +160,13 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/"         element={<LandingPage />} />
-        <Route path="/login"    element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/app"      element={<PrivateRoute><AppShell /></PrivateRoute>} />
-        <Route path="*"         element={<Navigate to="/" replace />} />
+        <Route path="/"                element={<LandingPage />} />
+        <Route path="/login"           element={<LoginPage />} />
+        <Route path="/register"        element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password"  element={<ResetPasswordPage />} />
+        <Route path="/app"             element={<PrivateRoute><AppShell /></PrivateRoute>} />
+        <Route path="*"                element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   )

@@ -570,36 +570,40 @@ export default function Dashboard({ jobs, onNewAnalysis, onViewJob }) {
             }} />
           ))}
 
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32 }}>
+            {/* Text block */}
+            <div style={{ flex: '1 1 0', minWidth: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.6, textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 8 }}>
                 Powered by
               </div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 10, lineHeight: 1.2 }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 10, lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                 CardioVision AI Engine
               </div>
-              <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, maxWidth: 540 }}>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 500 }}>
                 Fully automated cardiac function assessment from echocardiography.
                 Combines <strong style={{ color: '#fff' }}>nnU-Net</strong> segmentation with{' '}
                 <strong style={{ color: '#fff' }}>R(2+1)D-18 + Attention</strong> for ensemble EF prediction via Biplane Simpson.
               </div>
             </div>
-            <Button
-              type="default"
-              size="large"
-              icon={<PlusOutlined />}
-              onClick={onNewAnalysis}
-              style={{
-                borderRadius: 12, height: 46, fontWeight: 700, paddingInline: 24,
-                background: 'rgba(255,255,255,0.15)',
-                border: '1.5px solid rgba(255,255,255,0.3)',
-                color: '#fff', backdropFilter: 'blur(8px)',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-                flexShrink: 0,
-              }}
-            >
-              New Analysis
-            </Button>
+            {/* CTA */}
+            <div style={{ flexShrink: 0 }}>
+              <Button
+                type="default"
+                size="large"
+                icon={<PlusOutlined />}
+                onClick={onNewAnalysis}
+                style={{
+                  borderRadius: 12, height: 46, fontWeight: 700, paddingInline: 24,
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '1.5px solid rgba(255,255,255,0.35)',
+                  color: '#fff', backdropFilter: 'blur(8px)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}
+              >
+                New Analysis
+              </Button>
+            </div>
           </div>
         </div>
 
