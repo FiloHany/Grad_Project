@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Lock, ArrowLeft, CheckCircle, Eye, EyeOff, Sun, Moon } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import { resetPassword } from '../api/client'
 
 function strengthLevel(pwd) {
   let score = 0
@@ -43,13 +44,19 @@ export default function ResetPasswordPage() {
     if (!/[A-Z]/.test(password)) return setError('Must include at least one uppercase letter.')
     if (!/[0-9]/.test(password)) return setError('Must include at least one number.')
     if (password !== confirm)    return setError('Passwords do not match.')
+
     setLoading(true)
-    await new Promise(r => setTimeout(r, 1400))
-    localStorage.removeItem('cv_resetEmail')
-    localStorage.removeItem('cv_resetToken')
-    setLoading(false)
-    setSuccess(true)
-    setTimeout(() => navigate('/login'), 3000)
+    try {
+      await resetPassword(email, password)
+      localStorage.removeItem('cv_resetEmail')
+      localStorage.removeItem('cv_resetToken')
+      setSuccess(true)
+      setTimeout(() => navigate('/login'), 3000)
+    } catch (err) {
+      setError(err.message || 'Password reset failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const strength = strengthLevel(password)

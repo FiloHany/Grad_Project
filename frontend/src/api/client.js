@@ -56,6 +56,32 @@ export async function getMe() {
   return request('/api/auth/me')
 }
 
+export async function forgotPassword(email) {
+  const res = await fetch('/api/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail || 'Request failed')
+  }
+  return res.json()
+}
+
+export async function resetPassword(email, newPassword) {
+  const res = await fetch('/api/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, new_password: newPassword }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail || 'Password reset failed')
+  }
+  return res.json()
+}
+
 // ── Studies & Jobs ────────────────────────────────────────────────────────────
 
 export async function uploadStudy(file4ch, file2ch, patientName, patientId) {

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, ArrowLeft, Send, CheckCircle, Sun, Moon } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import { forgotPassword } from '../api/client'
 
 export default function ForgotPasswordPage() {
   const { theme, toggleTheme } = useTheme()
@@ -19,12 +20,16 @@ export default function ForgotPasswordPage() {
       return setError('Please enter a valid email address.')
     }
     setLoading(true)
-    // Simulate API delay (no real email server)
-    await new Promise(r => setTimeout(r, 1400))
-    localStorage.setItem('cv_resetEmail', email)
-    localStorage.setItem('cv_resetToken', Math.random().toString(36).slice(2))
-    setLoading(false)
-    setSuccess(true)
+    try {
+      await forgotPassword(email)
+      localStorage.setItem('cv_resetEmail', email)
+      localStorage.setItem('cv_resetToken', Math.random().toString(36).slice(2))
+      setSuccess(true)
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

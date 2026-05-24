@@ -104,6 +104,42 @@ def get_me(doctor: Doctor = Depends(get_current_doctor)):
     return doctor.to_dict()
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+@router.post("/forgot-password", summary="Verify that an email is registered (demo: no real email sent)")
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    doctor = db.query(Doctor).filter(Doctor.email == req.email.lower().strip()).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="No account found with that email address.")
+    # In production this would trigger an email. Here we just confirm the account exists.
+    return {"message": "Account found. You may proceed to reset your password."}
+
+
+class ResetPasswordRequest(BaseModel):
+    email:        str
+    new_password: str
+
+
+@router.post("/reset-password", summary="Reset password by email (no token required — demo mode)")
+def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
+    if len(req.new_password) < 8:
+        raise HTTPException(status_code=422, detail="Password must be at least 8 characters.")
+    if not any(c.isupper() for c in req.new_password):
+        raise HTTPException(status_code=422, detail="Password must include at least one uppercase letter.")
+    if not any(c.isdigit() for c in req.new_password):
+        raise HTTPException(status_code=422, detail="Password must include at least one number.")
+
+    doctor = db.query(Doctor).filter(Doctor.email == req.email.lower().strip()).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="No account found with that email address.")
+
+    doctor.password_hash = hash_password(req.new_password)
+    db.commit()
+    return {"message": "Password updated successfully."}
+
+
 class UpdateProfileRequest(BaseModel):
     full_name: Optional[str] = None
     specialty: Optional[str] = None
